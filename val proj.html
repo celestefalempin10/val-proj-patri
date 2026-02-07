@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Valentine 💌</title>
+
+<style>
+  :root{
+    --babyBlue:#89CFF0;
+    --bg:#e6cfd8;
+    --ink:#2b2b2b;
+    --pattern:url("https://img.freepik.com/premium-vector/floral-pattern-pretty-flowers-light-blue-background-printing-with-small-flowers-ditsy-print_264287-312.jpg?w=1060");
+  }
+
+  *{ box-sizing:border-box; }
+
+  body{
+    margin:0;
+    height:100vh;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    font-family: Arial, sans-serif;
+    background: var(--bg);
+    text-align:center;
+    overflow:hidden;
+  }
+
+  #app{
+    width:min(900px, 96vw);
+    padding:20px;
+  }
+
+  h1{
+    color: var(--babyBlue);
+    margin:0 0 16px 0;
+    font-weight:700;
+  }
+
+  button{
+    padding:14px 24px;
+    font-size:18px;
+    border:none;
+    border-radius:14px;
+    cursor:pointer;
+    user-select:none;
+    -webkit-tap-highlight-color: transparent;
+    box-shadow: 0 10px 18px rgba(0,0,0,.12);
+    font-family: Arial, sans-serif;
+  }
+
+  .row{
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    gap: 2cm; /* exact spacing request */
+    margin-top:18px;
+    flex-wrap:wrap;
+  }
+
+  .yes{ background:#ACE1AF; color:#228B22; }
+  .no{ background:#D8BFD8; color:#E6E6FA; }
+
+  /* ---------- STAGE ---------- */
+  .envelopeStage{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:14px;
+  }
+
+  .stageArea{
+    position:relative;
+    width:min(860px, 96vw);
+    height:min(560px, 78vh);
+  }
+
+  /* ---------- ENVELOPE (WIDTH OK, TALLER) ---------- */
+  .envelope2{
+    position:absolute;
+    left:50%;
+    top:58%;
+    transform:translate(-50%,-50%);
+    width:min(760px, 92vw);
+    height:min(520px, 72vh); /* taller */
+  }
+
+  /* POCKET */
+  .pocket{
+    position:absolute;
+    left:50%;
+    bottom:0;
+    transform:translateX(-50%);
+    width:100%;
+    height:300px;
+    border-radius:28px;
+    overflow:hidden;
+    z-index:6;
+    pointer-events:none;
+    box-shadow: 0 16px 30px rgba(0,0,0,.16);
+
+    background-image: var(--pattern);
+    background-size: cover;
+    background-position:center;
+  }
+
+  .pocket::before{
+    content:"";
+    position:absolute;
+    inset:0;
+    background: rgba(255,255,255,.55);
+  }
+
+  /* A single neat V fold (subtle) */
+  .pocket::after{
+    content:"";
+    position:absolute;
+    inset:0;
+    background: rgba(137,207,240,.14);
+    clip-path: polygon(0 0, 50% 62%, 100% 0, 100% 100%, 0 100%);
+  }
+
+  /* FLAP (NORMAL SIZE + TIP TOUCHES POCKET TOP) */
+  .flap{
+  position:absolute;
+  left:50%;
+  transform:translateX(-50%) rotateX(0deg);
+  transform-origin: top;
+
+  width:100%;
+  height:260px;                 /* keep normal size */
+  top: calc(100% - 300px);      /* ✅ pocket top edge */
+  margin-top:-2px;              /* ✅ tiny overlap so it “touches” */
+
+  border-radius:28px;
+  clip-path: polygon(0 0, 100% 0, 50% 100%);
+  z-index:7;
+  pointer-events:none;
+  transition: transform 0.8s ease, opacity .25s ease;
+
+  background-image: var(--pattern);
+  background-size: cover;
+  background-position:center;
+  box-shadow: 0 12px 18px rgba(0,0,0,.12);
+}
+
+  .flap::after{
+    content:"";
+    position:absolute;
+    inset:0;
+    background: rgba(137,207,240,.14);
+  }
+
+  .opened .flap{
+    transform:translateX(-50%) rotateX(-180deg);
+    opacity:.25;
+  }
+
+  /* LETTER (LONGER) */
+  .letter{
+    position:absolute;
+    left:50%;
+    bottom:150px; /* starts inside */
+    transform:translateX(-50%) translateY(95%);
+    width:min(600px, 88vw);
+    min-height: 320px;       /* longer letter */
+    background:#FAF9F6;
+    border-radius:18px;
+    padding:26px 20px;
+    box-shadow: 0 18px 30px rgba(0,0,0,.18);
+    opacity:0;
+    transition: transform 1.2s cubic-bezier(.2,.9,.2,1), opacity .6s ease;
+    z-index:10;
+    text-align:center;
+  }
+
+  .letter h2{
+    margin:0 0 10px 0;
+    color:var(--ink);
+    font-size:26px;
+  }
+  .letter p{
+    margin:0 0 16px 0;
+    color:#444;
+  }
+
+  /* Slide the letter out higher */
+  .showLetter .letter{
+    opacity:1;
+    transform:translateX(-50%) translateY(-75%);
+  }
+
+  /* hearts */
+  .heartsLayer{
+    pointer-events:none;
+    position:absolute;
+    inset:0;
+    overflow:hidden;
+    z-index:30;
+  }
+
+  .heart{
+    position:absolute;
+    left:50%;
+    top:58%;
+    width:18px; height:18px;
+    transform: translate(-50%, -50%) rotate(45deg);
+    opacity:0;
+    animation: fly 1100ms ease-out forwards;
+    background: var(--babyBlue);
+    filter: drop-shadow(0 6px 8px rgba(0,0,0,.16));
+  }
+  .heart::before, .heart::after{
+    content:"";
+    position:absolute;
+    width:18px; height:18px;
+    border-radius:50%;
+    background: var(--babyBlue);
+  }
+  .heart::before{ left:-9px; top:0; }
+  .heart::after{ left:0; top:-9px; }
+
+  @keyframes fly{
+    0%   { opacity:0; transform: translate(-50%,-50%) rotate(45deg) scale(.6); }
+    15%  { opacity:1; }
+    100% { opacity:0; transform: translate(calc(-50% + var(--dx)), calc(-50% + var(--dy))) rotate(45deg) scale(1.2); }
+  }
+
+  /* ---------- SECOND SCREEN (KEEP PINK + SAME FONT) ---------- */
+  .panel{
+    width:min(720px, 94vw);
+    border-radius:28px;
+    padding:26px 20px;
+    box-shadow: 0 22px 52px rgba(0,0,0,.22);
+    background: rgba(255,255,255,.35);
+    backdrop-filter: blur(6px);
+    border: 2px solid rgba(255,255,255,.55);
+  }
+
+  .bigQuestion{
+    font-size: clamp(28px, 5.8vw, 54px);
+    color: var(--ink);
+    margin: 6px 0 8px 0;
+    font-weight:700;
+  }
+
+  .subLine{
+    font-size: clamp(16px, 3.8vw, 22px);
+    margin: 0 0 12px 0;
+    color:#333;
+  }
+
+  .gifBox{
+    width:min(360px, 86vw);
+    border-radius:20px;
+    overflow:hidden;
+    margin: 18px auto 0 auto;
+    box-shadow: 0 14px 24px rgba(0,0,0,.14);
+    background:#fff;
+    display:none;
+  }
+  .gifBox img{ width:100%; display:block; height:auto; }
+
+  #text{
+    display:none;
+    margin-top: 14px;
+    font-size: clamp(16px, 3.7vw, 20px);
+    color:#222;
+    min-height: 2.2em;
+  }
+</style>
+</head>
+
+<body>
+<div id="app"></div>
+
+<script>
+  const noStates = [
+    { text: "Wait surely you clicked that by mistake lol ?", gif:"https://media.giphy.com/media/FqHTyEllkHxAY/giphy.gif" },
+    { text: "oohh so you were serious 😭", gif:"https://media.tenor.com/mB-V__WeG7UAAAAd/funny.gif" },
+    { text: "PLEASEEE, there is a first for everything, I’m on my knees 🙏", gif:"https://media.giphy.com/media/9Y5BbDSkSTiY8/giphy.gif" },
+    { text: "Okay okay I get it, but last chance still, pretty pretty please? 🥹", gif:"https://media.tenor.com/k4lGy5Z91ooAAAAd/chihiro-spirited.gif" }
+  ];
+
+  let noCount = -1;
+
+  function showEnvelope(){
+    document.getElementById("app").innerHTML = `
+      <div class="envelopeStage">
+        <h1>You’ve got mail 💌</h1>
+
+        <div class="stageArea" id="stageArea">
+          <div class="heartsLayer" id="heartsLayer"></div>
+
+          <div class="envelope2" id="env">
+            <div class="letter" id="letter">
+              <h2>Are you ready?</h2>
+              <p>I have a few questions for you…</p>
+              <div class="row">
+                <button class="yes" id="readyYes">Yes</button>
+                <button class="no" id="maybeLater">Maybe later</button>
+              </div>
+            </div>
+
+            <div class="pocket"></div>
+            <div class="flap"></div>
+          </div>
+        </div>
+      </div>
+    `;
+
+    const env = document.getElementById("env");
+
+    setTimeout(() => {
+      env.classList.add("opened");
+      burstHearts();
+
+      setTimeout(() => {
+        env.classList.add("showLetter");
+        hookupRunaway();
+        hookupReadyYes();
+      }, 1200);
+
+    }, 1200);
+  }
+
+  function burstHearts(){
+    const layer = document.getElementById("heartsLayer");
+    const count = 14;
+    for(let i=0;i<count;i++){
+      const h = document.createElement("div");
+      h.className = "heart";
+      h.style.setProperty("--dx", (Math.random()*520-260).toFixed(0)+"px");
+      h.style.setProperty("--dy", (Math.random()*-360-80).toFixed(0)+"px");
+      h.style.animationDelay = (Math.random()*220).toFixed(0)+"ms";
+      layer.appendChild(h);
+      h.addEventListener("animationend", () => h.remove());
+    }
+  }
+
+  function hookupRunaway(){
+    const btn = document.getElementById("maybeLater");
+    const area = document.getElementById("stageArea");
+
+    btn.addEventListener("mouseover", (e)=>runAway(e, btn, area));
+    btn.addEventListener("touchstart", (e)=>runAway(e, btn, area), {passive:false});
+  }
+
+  function runAway(e, btn, area){
+    if(e) e.preventDefault();
+
+    area.style.position = "relative";
+    btn.style.position = "absolute";
+    btn.style.zIndex = 9999;
+
+    const pad = 12;
+    const areaRect = area.getBoundingClientRect();
+    const bw = btn.offsetWidth || 160;
+    const bh = btn.offsetHeight || 52;
+
+    const maxX = areaRect.width  - bw - pad;
+    const maxY = areaRect.height - bh - pad;
+
+    btn.style.left = (Math.random()*Math.max(maxX,pad))+"px";
+    btn.style.top  = (Math.random()*Math.max(maxY,pad))+"px";
+  }
+
+  function hookupReadyYes(){
+    const y = document.getElementById("readyYes");
+    y.addEventListener("click", showValentine);
+    y.addEventListener("touchstart", (e)=>{ e.preventDefault(); showValentine(); }, {passive:false});
+  }
+
+function showValentine(){
+  noCount = -1;
+
+  document.getElementById("app").innerHTML = `
+    <div class="panel">
+      <img id="mainGif" src="https://media.giphy.com/media/MDJ9IbxxvDUQM/giphy.gif"
+           style="width:min(360px,86vw); border-radius:20px; box-shadow:0 14px 24px rgba(0,0,0,.14);">
+
+      <div class="bigQuestion">Patri will you be my Valentine?</div>
+
+      <div class="row">
+        <button class="yes" id="valYes">Yes</button>
+        <button class="no" id="valNo">Not this year Lesty</button>
+      </div>
+
+      <div id="text" style="display:none;"></div>
+    </div>
+  `;
+
+  document.getElementById("valYes").addEventListener("click", yesEnd);
+  document.getElementById("valYes").addEventListener("touchstart", (e)=>{ e.preventDefault(); yesEnd(); }, {passive:false});
+
+  document.getElementById("valNo").addEventListener("click", noClick);
+  document.getElementById("valNo").addEventListener("touchstart", (e)=>{ e.preventDefault(); noClick(); }, {passive:false});
+}
+
+function yesEnd(){
+  // Replace whole page with ONE gif (no accumulation)
+  document.getElementById("app").innerHTML = `
+    <div class="panel">
+      <div class="bigQuestion"> whopp whopp happy lesty </div>
+      <div class="subLine"> YOLO best day ever ♥ </div>
+
+      <img src="https://media.tenor.com/fQ-B-xei5AUAAAAM/backflip-dancing.gif"
+           style="width:min(360px,86vw); border-radius:20px; box-shadow:0 14px 24px rgba(0,0,0,.14);">
+    </div>
+  `;
+}
+
+function noClick(){
+  noCount++;
+  const i = Math.min(noCount, noStates.length - 1);
+
+  // Change the SAME gif instead of adding a new one
+  const gifEl  = document.getElementById("mainGif");
+  const textEl = document.getElementById("text");
+
+  gifEl.src = noStates[i].gif;
+
+  textEl.style.display = "block";
+  textEl.textContent = noStates[i].text;
+}
+
+  showEnvelope();
+</script>
+</body>
+</html>
